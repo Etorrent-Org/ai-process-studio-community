@@ -71,7 +71,7 @@ jobs:
           set -euo pipefail
           tar -tzf snapshot.tar.gz \
             | sed 's#^\./##' \
-            | grep -v '/$' \
+            | grep -Ev '^$|/$' \
             > /tmp/community-source-files.txt
           test "$(wc -l < /tmp/community-source-files.txt)" -eq 51
           tar -xzf snapshot.tar.gz
