@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "2.1.0",
+  "organizations": [],
+  "projects": [],
+  "processes": [],
+  "analyses": [],
+  "opportunities": [],
+  "targetProcesses": [],
+  "sops": [],
+  "roadmapItems": [],
+  "documents": [],
+  "prompts": [],
+  "events": [],
+  "settings": {
+    "companyName": "",
+    "locale": "fr",
+    "aiMode": "manual",
+    "scoringWeights": {
+      "timeGain": 2,
+      "frequency": 2,
+      "businessImpact": 3,
+      "ease": 2,
+      "risk": -2,
+      "confidentiality": -1
+    }
+  }
+}

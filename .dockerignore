@@ -1,0 +1,11 @@
+.git
+.sites-runtime
+.wrangler
+.next
+node_modules
+release
+backups/*
+data/*
+!data/README.txt
+license/*.private.*
+*.log

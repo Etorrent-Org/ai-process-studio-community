@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-process-studio.local/schemas/state-v1.schema.json",
+  "title": "AI Process Studio state v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "organizations", "projects", "processes", "analyses"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "organizations": { "type": "array", "items": { "$ref": "#/$defs/organization" } },
+    "projects": { "type": "array", "items": { "$ref": "#/$defs/project" } },
+    "processes": { "type": "array", "items": { "$ref": "#/$defs/process" } },
+    "analyses": { "type": "array", "items": { "$ref": "analysis-v1.schema.json" } }
+  },
+  "$defs": {
+    "identifier": { "type": "string", "minLength": 1, "maxLength": 160 },
+    "organization": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "sector": { "type": "string", "maxLength": 200 },
+        "size": { "type": "string", "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 5000 }
+      }
+    },
+    "project": {
+      "type": "object",
+      "required": ["id", "organizationId", "name"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "organizationId": { "$ref": "#/$defs/identifier" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "objective": { "type": "string", "maxLength": 5000 },
+        "scope": { "type": "string", "maxLength": 5000 },
+        "sponsor": { "type": "string", "maxLength": 200 },
+        "status": { "type": "string", "maxLength": 80 }
+      }
+    },
+    "step": {
+      "type": "object",
+      "required": ["id", "order", "name", "durationMinutes", "waitMinutes"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "order": { "type": "integer", "minimum": 1 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 300 },
+        "actor": { "type": "string", "maxLength": 200 },
+        "tool": { "type": "string", "maxLength": 200 },
+        "input": { "type": "string", "maxLength": 2000 },
+        "action": { "type": "string", "maxLength": 5000 },
+        "output": { "type": "string", "maxLength": 2000 },
+        "durationMinutes": { "type": "number", "minimum": 0 },
+        "waitMinutes": { "type": "number", "minimum": 0 },
+        "irritant": { "type": "boolean" },
+        "risk": { "type": "string", "maxLength": 2000 },
+        "automated": { "type": "boolean" },
+        "aiUsed": { "type": "boolean" }
+      }
+    },
+    "process": {
+      "type": "object",
+      "required": ["id", "projectId", "name", "status", "version", "steps"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "projectId": { "$ref": "#/$defs/identifier" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 300 },
+        "description": { "type": "string", "maxLength": 5000 },
+        "objective": { "type": "string", "maxLength": 5000 },
+        "trigger": { "type": "string", "maxLength": 2000 },
+        "result": { "type": "string", "maxLength": 2000 },
+        "frequency": { "type": "string", "maxLength": 200 },
+        "criticality": { "enum": ["Faible", "Moyenne", "Haute"] },
+        "owner": { "type": "string", "maxLength": 200 },
+        "status": { "enum": ["Brouillon", "À valider", "Validé"] },
+        "version": { "type": "integer", "minimum": 1 },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "steps": { "type": "array", "maxItems": 1000, "items": { "$ref": "#/$defs/step" } }
+      }
+    }
+  }
+}

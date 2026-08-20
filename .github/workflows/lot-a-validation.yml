@@ -1,0 +1,53 @@
+name: Lot A validation
+
+on:
+  push:
+    branches:
+      - open-core-1.1.0
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check server syntax
+        run: node --check server.mjs
+      - name: Validate JSON contracts
+        run: |
+          node -e "for (const file of ['package.json','seed/state.json','schemas/state-v2.schema.json','prompts/catalog-v1.json']) JSON.parse(require('node:fs').readFileSync(file,'utf8'));"
+      - name: Validate Community source boundary
+        run: node scripts/check-community-boundary.mjs
+      - name: Check Community seed contract
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const state = JSON.parse(fs.readFileSync('seed/state.json', 'utf8'));
+          if (state.schemaVersion !== '2.1.0') throw new Error('Unexpected schema version');
+          for (const key of ['n8nWebhookUrl', 'notionWebhookUrl', 'n8nEnabled', 'notionEnabled']) {
+            if (key in state.settings) throw new Error(`Retired setting remains: ${key}`);
+          }
+          NODE
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install frontend dependencies
+        run: npm install --package-lock=false
+      - name: Typecheck maintained source
+        run: npm run typecheck
+      - name: Build maintained source
+        run: npm run build

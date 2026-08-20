@@ -1,0 +1,135 @@
+name: Community package staging
+
+on:
+  push:
+    branches:
+      - open-core-1.1.0-lot-d
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies and generate lockfile
+        run: npm install
+
+      - name: Report resolved security baseline
+        run: npm ls vinext @vitejs/plugin-rsc react react-dom react-server-dom-webpack mermaid vite --depth=0
+
+      - name: Reject image-size from consumer dependency graph
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const lock = JSON.parse(fs.readFileSync('package-lock.json', 'utf8'));
+          const packages = Object.keys(lock.packages || {});
+          const matches = packages.filter((path) => path === 'node_modules/image-size' || path.endsWith('/node_modules/image-size'));
+          if (matches.length) {
+            console.error(`image-size must not be installed in the Community consumer graph: ${matches.join(', ')}`);
+            process.exit(1);
+          }
+          console.log('image-size is absent from the Community consumer dependency graph.');
+          NODE
+
+      - name: Validate Community source boundary
+        run: npm run check:community-boundary
+
+      - name: Typecheck Community source
+        run: npm run typecheck
+
+      - name: Build Community runtime
+        run: npm run build
+
+      - name: Run open-core policy tests against fresh build
+        run: npm run test:open-core
+
+      - name: Verify generated runtime shape
+        run: |
+          test -f dist/server/index.js
+          test -d dist/client
+          if git ls-files dist | grep -q .; then
+            echo "Generated dist must not be tracked."
+            exit 1
+          fi
+
+      - name: Enforce npm high and critical audit gate
+        run: |
+          npm audit --json > npm-audit.json || true
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const audit = JSON.parse(fs.readFileSync('npm-audit.json', 'utf8'));
+          const counts = audit.metadata?.vulnerabilities || {};
+          const high = Number(counts.high || 0);
+          const critical = Number(counts.critical || 0);
+          console.log(`npm audit: critical=${critical}, high=${high}, moderate=${Number(counts.moderate || 0)}, low=${Number(counts.low || 0)}`);
+          if (critical > 0 || high > 0) {
+            console.error('Community publication is blocked by unresolved high or critical npm vulnerabilities.');
+            process.exit(1);
+          }
+          NODE
+
+      - name: Generate SPDX SBOM
+        run: npm sbom --sbom-format spdx > SBOM.spdx.json
+
+      - name: Build Community Docker image
+        run: docker build -t aps-community-stage:1.1.0 .
+
+      - name: Boot staged Community image
+        run: |
+          docker run -d --rm --name aps-community-stage -p 39082:3080 aps-community-stage:1.1.0
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:39082/api/health > health.json; then
+              cat health.json
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs aps-community-stage
+          exit 1
+
+      - name: Stop staged container
+        if: always()
+        run: docker rm -f aps-community-stage || true
+
+      - name: Create clean Community source snapshot
+        run: |
+          mkdir -p staging/source
+          git archive HEAD | tar -x -C staging/source
+          cp package-lock.json staging/source/package-lock.json
+          tar -czf ai-process-studio-community-1.1.0-source.tar.gz -C staging/source .
+
+      - name: Export Community Docker image
+        run: docker save aps-community-stage:1.1.0 | gzip > ai-process-studio-community-1.1.0-docker.tar.gz
+
+      - name: Create checksums
+        run: |
+          sha256sum \
+            ai-process-studio-community-1.1.0-source.tar.gz \
+            ai-process-studio-community-1.1.0-docker.tar.gz \
+            SBOM.spdx.json \
+            npm-audit.json \
+            > SHA256SUMS.txt
+
+      - name: Upload staging artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-process-studio-community-1.1.0-staging
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            ai-process-studio-community-1.1.0-source.tar.gz
+            ai-process-studio-community-1.1.0-docker.tar.gz
+            SBOM.spdx.json
+            npm-audit.json
+            health.json
+            SHA256SUMS.txt

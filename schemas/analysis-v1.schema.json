@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-process-studio.local/schemas/analysis-v1.schema.json",
+  "title": "APS process analysis v1",
+  "type": "object",
+  "required": ["id", "processId", "type", "status", "importedAt", "promptVersion", "issues"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "processId": { "type": "string", "minLength": 1 },
+    "type": { "const": "audit" },
+    "status": { "enum": ["À valider", "Validé", "Rejeté"] },
+    "importedAt": { "type": "string", "format": "date-time" },
+    "promptVersion": { "type": "string", "minLength": 1 },
+    "provider": { "type": "string" },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "description", "impact", "criticality", "recommendation"],
+        "properties": {
+          "type": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "impact": { "type": "string", "minLength": 1 },
+          "criticality": { "enum": ["Faible", "Moyenne", "Haute"] },
+          "recommendation": { "type": "string", "minLength": 1 },
+          "stepId": { "type": "string" }
+        }
+      }
+    }
+  }
+}

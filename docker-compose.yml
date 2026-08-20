@@ -1,0 +1,27 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    image: erwanntorrent/ai-process-studio:1.1.0
+
+    ports:
+      - "127.0.0.1:3080:3080"
+
+    environment:
+      NODE_ENV: production
+      PORT: "3080"
+      APS_HOST: "0.0.0.0"
+      APS_DATA_DIR: "/app/data"
+      APS_LICENSE_DIR: "/app/license"
+      APS_BACKUP_DIR: "/app/backups"
+      APS_SEED_FILE: "/app/seed/state.json"
+      TZ: "Europe/Paris"
+
+    volumes:
+      - ./data:/app/data
+      - ./license:/app/license
+      - ./backups:/app/backups
+
+    restart: unless-stopped

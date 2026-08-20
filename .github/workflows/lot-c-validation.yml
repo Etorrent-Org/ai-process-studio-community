@@ -1,0 +1,70 @@
+name: Lot C validation
+
+on:
+  push:
+    branches:
+      - open-core-1.1.0-lot-c
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  community-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify historical dist is not tracked
+        run: |
+          if git ls-files dist | grep -q .; then
+            echo "Historical dist must not be tracked in the Community source candidate."
+            exit 1
+          fi
+          test ! -e scripts/patch-legacy-ui.mjs
+      - name: Install dependencies
+        run: npm install --package-lock=false
+      - name: Check Community source boundary
+        run: npm run check:community-boundary
+      - name: Typecheck Community frontend
+        run: npm run typecheck
+      - name: Build Community frontend
+        run: npm run build
+      - name: Validate generated runtime shape
+        run: |
+          test -f dist/server/index.js
+          test -d dist/client
+      - name: Reject Professional implementation markers in generated client
+        run: |
+          if grep -R -E "ai_finder|ProfessionalGate|OpportunitiesView|OptimizeView|SopView|RoadmapView|process-analysis|ai-opportunity-analysis|sop-generation" dist/client; then
+            echo "Professional implementation marker leaked into Community client build."
+            exit 1
+          fi
+
+  community-container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Community Docker image from source
+        run: docker build -t aps-community-ci .
+      - name: Start Community container
+        run: docker run -d --rm --name aps-community-ci -p 39081:3080 aps-community-ci
+      - name: Check health endpoint
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:39081/api/health > health.json; then
+              cat health.json
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs aps-community-ci
+          exit 1
+      - name: Stop Community container
+        if: always()
+        run: docker rm -f aps-community-ci || true

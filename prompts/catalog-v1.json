@@ -1,0 +1,15 @@
+{
+  "version": "1.1.0",
+  "language": "fr",
+  "edition": "Community",
+  "prompts": [
+    { "id": "process-discovery", "module": "discover", "purpose": "Structurer un entretien de découverte sans inventer d'information." },
+    { "id": "executive-summary", "module": "core", "purpose": "Synthétiser les faits validés sans ajouter de fait." }
+  ],
+  "commonRules": [
+    "Utiliser uniquement les données fournies.",
+    "Séparer les faits et les hypothèses.",
+    "Ne jamais modifier le processus AS-IS sans validation humaine.",
+    "Répondre en JSON strict sans Markdown lorsque le format JSON est demandé."
+  ]
+}

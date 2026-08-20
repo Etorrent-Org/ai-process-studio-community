@@ -1,0 +1,34 @@
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Frontend dependencies and generated build state
+node_modules/
+dist/
+.next/
+.vinext/
+.vite/
+
+# Runtime data
+data/*
+!data/README.txt
+
+# Runtime license
+license/*
+!license/README.md
+
+# Local backups
+backups/*
+!backups/README.txt
+
+# Temporary / generated local files
+*.zip
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/

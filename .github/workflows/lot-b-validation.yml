@@ -1,0 +1,56 @@
+name: Lot B validation
+
+on:
+  push:
+    branches:
+      - open-core-1.1.0-lot-b
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  open-core-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check server syntax
+        run: node --check server.mjs
+      - name: Check policy test syntax
+        run: node --check tests/open-core-policy.mjs
+      - name: Install frontend dependencies
+        run: npm install --package-lock=false
+      - name: Validate Community boundary
+        run: npm run check:community-boundary
+      - name: Build Community runtime
+        run: npm run build
+      - name: Run open-core integration policy
+        run: npm run test:open-core
+      - name: Reject committed private keys
+        run: |
+          if grep -R -E "BEGIN (RSA |EC |OPENSSH |)PRIVATE KEY" --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=data --exclude-dir=backups .; then
+            echo "Private key material must never be committed."
+            exit 1
+          fi
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install frontend dependencies
+        run: npm install --package-lock=false
+      - name: Validate Community boundary
+        run: npm run check:community-boundary
+      - name: Typecheck frontend
+        run: npm run typecheck
+      - name: Build frontend
+        run: npm run build
