@@ -24,13 +24,23 @@ jobs:
           set -euo pipefail
           : > snapshot.tar.gz
           for sha in \
-            b2ef9a61853364812e932c2fffb1903ced60cb8d \
-            1437102b99e60a27caf12e65b1b2b01660563504 \
-            967f996c66cea3c6ba74f75aa1091dc84080d989 \
-            d6cd0b309a87bcba4ab4f8e36ca2412fb38452cf \
-            bcc48b2012f38859960b773aa22a02ef2db3167e \
-            e3f725baf62c30c2b8cde02207257e6955bf7439 \
-            a2175f6293b6a1a3e192902e1fd8e6e66f4b8540 \
+            11bbb13e3ad89e307b44ec31ed32657f85bffe5d \
+            4135d4810e761aa1177449e2132cb9b7147612bf \
+            10ebec3e82f4f542eae1e681318958f1c38ce0f3 \
+            55e131702c239d58677d200af0a0f683e63a06d2 \
+            0e88dc92bcdc1dc09deb21caf1f123fac4682e52 \
+            554b430f6c14309c875f5a94f2b7422d39d4da33 \
+            4b5df42cc778f6e915d6fa80b038776bc1853c89 \
+            c1160df8b33155e37ae502ee951377cf0c818b24 \
+            587d4e7a05defd9c2706fbd9320b4fc8e299b5d5 \
+            7d268e9b534559c130c4054e7a20914d4a8ba7e2 \
+            0e7198c6aff39cbacdd27ad2f4ddad264653e079 \
+            af45363a2e9de822e16c39c112a8e6ef4bba8d2a \
+            9ff7fe25e6515669831dc9e732c5097b7c5baa14 \
+            2df99eac8e5c60c8f05e14d130207507d8a36074 \
+            20de5c40113b5060e7f1ebc731a63bb5e26e9db4 \
+            e3f725c89c852c99c519335074ff26975a443abf \
+            a217c5c720a7e3c3e9b40949ecc2a7a216175549 \
             33b28e33d630eaacaff937e3bed6e1f5173eb1fa \
             5bb781d6504c278ada1a6e24f423c079a6532562 \
             1bd5f81f0a179c320491737baae20091060f4b79 \
@@ -53,7 +63,7 @@ jobs:
               | tr -d '\n' \
               | base64 -d >> snapshot.tar.gz
           done
-          echo "63ccce2eef31656024461c52634ad65f0f10786418d27eb5c5b98e49534f69e8  snapshot.tar.gz" | sha256sum -c -
+          echo "f5e5edaf5c29c7c9b5e5a64ede3c20abd2421b9c1d202b95fa54e067db8ce50c  snapshot.tar.gz" | sha256sum -c -
 
       - name: Extract and validate exact Community snapshot
         run: |
