@@ -1,4 +1,4 @@
-﻿param(
+param(
     [Parameter(Mandatory = $true)]
     [string]$ArchivePath
 )
@@ -21,14 +21,17 @@ Expand-Archive -Path $Archive -DestinationPath $Tmp -Force
 docker compose stop
 
 New-Item -ItemType Directory -Path ".\data" -Force | Out-Null
-New-Item -ItemType Directory -Path ".\license" -Force | Out-Null
+New-Item -ItemType Directory -Path ".\licenses" -Force | Out-Null
 
 if (Test-Path "$Tmp\data") {
     Copy-Item "$Tmp\data\*" ".\data\" -Recurse -Force
 }
 
-if (Test-Path "$Tmp\license") {
-    Copy-Item "$Tmp\license\*" ".\license\" -Recurse -Force
+if (Test-Path "$Tmp\licenses") {
+    Copy-Item "$Tmp\licenses\*" ".\licenses\" -Recurse -Force
+}
+elseif (Test-Path "$Tmp\license") {
+    Copy-Item "$Tmp\license\*" ".\licenses\" -Recurse -Force
 }
 
 if (Test-Path "$Tmp\.env") {

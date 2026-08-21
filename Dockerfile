@@ -17,11 +17,14 @@ RUN npm run typecheck \
 FROM node:22-alpine
 
 LABEL org.opencontainers.image.title="AI Process Studio Community" \
-      org.opencontainers.image.version="1.1.0" \
+      org.opencontainers.image.version="1.1.1" \
       org.opencontainers.image.description="Local-first Community process intelligence workspace" \
       org.opencontainers.image.licenses="MPL-2.0"
 
 WORKDIR /app
+
+COPY package.json package-lock.json* ./
+RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev --package-lock=false; fi
 
 COPY --from=frontend-build --chown=node:node /build/dist ./dist
 COPY --chown=node:node server.mjs ./server.mjs

@@ -1,9 +1,6 @@
 name: Community package staging
 
 on:
-  push:
-    branches:
-      - open-core-1.1.0-lot-d
   pull_request:
     branches:
       - main
@@ -21,8 +18,34 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Install dependencies and generate lockfile
-        run: npm install
+      - name: Resolve package version
+        run: echo "APS_VERSION=$(cat VERSION)" >> "$GITHUB_ENV"
+
+      - name: Align package metadata with VERSION
+        run: npm version "$APS_VERSION" --no-git-tag-version --allow-same-version
+
+      - name: Reject case-insensitive tracked path collisions
+        run: |
+          python - <<'PY'
+          import subprocess
+          paths = subprocess.check_output(["git", "ls-files"], text=True).splitlines()
+          seen = {}
+          collisions = []
+          for path in paths:
+              key = path.casefold()
+              if key in seen and seen[key] != path:
+                  collisions.append((seen[key], path))
+              else:
+                  seen[key] = path
+          if collisions:
+              for left, right in collisions:
+                  print(f"Case-insensitive collision: {left} <-> {right}")
+              raise SystemExit(1)
+          print("Tracked paths are case-insensitive safe.")
+          PY
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Report resolved security baseline
         run: npm ls vinext @vitejs/plugin-rsc react react-dom react-server-dom-webpack mermaid vite --depth=0
@@ -82,20 +105,39 @@ jobs:
         run: npm sbom --sbom-format spdx > SBOM.spdx.json
 
       - name: Build Community Docker image
-        run: docker build -t aps-community-stage:1.1.0 .
+        run: docker build -t "aps-community-stage:${APS_VERSION}" .
 
       - name: Boot staged Community image
+        run: docker run -d --rm --name aps-community-stage -p 39082:3080 "aps-community-stage:${APS_VERSION}"
+
+      - name: Check staged health endpoint
         run: |
-          docker run -d --rm --name aps-community-stage -p 39082:3080 aps-community-stage:1.1.0
           for attempt in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:39082/api/health > health.json; then
               cat health.json
+              node - <<'NODE'
+          const fs = require('node:fs');
+          const health = JSON.parse(fs.readFileSync('health.json', 'utf8'));
+          if (health.version !== process.env.APS_VERSION) {
+            console.error(`Health version ${health.version} does not match VERSION ${process.env.APS_VERSION}.`);
+            process.exit(1);
+          }
+          NODE
               exit 0
             fi
             sleep 1
           done
           docker logs aps-community-stage
           exit 1
+
+      - name: Check staged application home page
+        run: |
+          curl --fail --silent --show-error http://127.0.0.1:39082/ > home.html
+          test -s home.html
+          if grep -q 'Erreur interne APS' home.html; then
+            echo "Community home page returned the APS internal error payload."
+            exit 1
+          fi
 
       - name: Stop staged container
         if: always()
@@ -106,30 +148,33 @@ jobs:
           mkdir -p staging/source
           git archive HEAD | tar -x -C staging/source
           cp package-lock.json staging/source/package-lock.json
-          tar -czf ai-process-studio-community-1.1.0-source.tar.gz -C staging/source .
+          tar -czf "ai-process-studio-community-${APS_VERSION}-source.tar.gz" -C staging/source .
 
       - name: Export Community Docker image
-        run: docker save aps-community-stage:1.1.0 | gzip > ai-process-studio-community-1.1.0-docker.tar.gz
+        run: docker save "aps-community-stage:${APS_VERSION}" | gzip > "ai-process-studio-community-${APS_VERSION}-docker.tar.gz"
 
       - name: Create checksums
         run: |
           sha256sum \
-            ai-process-studio-community-1.1.0-source.tar.gz \
-            ai-process-studio-community-1.1.0-docker.tar.gz \
+            "ai-process-studio-community-${APS_VERSION}-source.tar.gz" \
+            "ai-process-studio-community-${APS_VERSION}-docker.tar.gz" \
             SBOM.spdx.json \
             npm-audit.json \
+            health.json \
+            home.html \
             > SHA256SUMS.txt
 
       - name: Upload staging artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ai-process-studio-community-1.1.0-staging
+          name: ai-process-studio-community-${{ env.APS_VERSION }}-staging
           if-no-files-found: error
           retention-days: 14
           path: |
-            ai-process-studio-community-1.1.0-source.tar.gz
-            ai-process-studio-community-1.1.0-docker.tar.gz
+            ai-process-studio-community-${{ env.APS_VERSION }}-source.tar.gz
+            ai-process-studio-community-${{ env.APS_VERSION }}-docker.tar.gz
             SBOM.spdx.json
             npm-audit.json
             health.json
+            home.html
             SHA256SUMS.txt

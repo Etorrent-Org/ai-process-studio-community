@@ -1,4 +1,4 @@
-﻿$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Stop"
 
 . "$PSScriptRoot\install\APS-Common.ps1"
 
@@ -11,10 +11,10 @@ $Tmp = Join-Path $env:TEMP "aps-backup-$Stamp"
 Remove-Item $Tmp -Recurse -Force -ErrorAction SilentlyContinue
 
 New-Item -ItemType Directory -Path "$Tmp\data" -Force | Out-Null
-New-Item -ItemType Directory -Path "$Tmp\license" -Force | Out-Null
+New-Item -ItemType Directory -Path "$Tmp\licenses" -Force | Out-Null
 
 Copy-Item ".\data\*" "$Tmp\data\" -Recurse -Force -ErrorAction SilentlyContinue
-Copy-Item ".\license\*" "$Tmp\license\" -Recurse -Force -ErrorAction SilentlyContinue
+Copy-Item ".\licenses\*" "$Tmp\licenses\" -Recurse -Force -ErrorAction SilentlyContinue
 
 if (Test-Path ".env") {
     Copy-Item ".env" "$Tmp\.env"

@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.1.1 - 2026-08-21
+
+Windows installation and Community runtime reliability fixes.
+
+### Installation and runtime
+
+- avoids the case-insensitive Windows collision between the root `LICENSE` file and the former host `license/` directory by using `licenses/`
+- keeps the in-container Professional licence path `/app/license` unchanged
+- restores both current backups using `licenses/` and legacy backups using `license/`
+- installs production dependencies in the final Docker image so Vinext SSR can load React at runtime
+- validates the application home page in addition to `/api/health`
+
+### Validation
+
+- adds a case-insensitive tracked-path collision guard
+- adds Windows source and archive path-safety validation
+- validates the Community home page after the Docker image starts
+- derives staging artifact names and Docker staging tags from `VERSION`
+- aligns staging package metadata with the release version and verifies the health endpoint reports that version
+
+### Distribution
+
+- application version: 1.1.1
+- Docker image target: `erwanntorrent/ai-process-studio:1.1.1`
+- state schema: 2.1.0
+
 ## 1.1.0 - 2026-08-20
 
 Open-core transition, frontend source recovery and commercial boundary hardening.
