@@ -1,0 +1,178 @@
+name: Publish Community release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: community-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Resolve version and existing release
+        id: meta
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="$(tr -d '\r\n' < VERSION)"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release v$VERSION already exists; nothing to publish."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Align package metadata with VERSION
+        if: steps.meta.outputs.exists == 'false'
+        env:
+          APS_VERSION: ${{ steps.meta.outputs.version }}
+        run: npm version "$APS_VERSION" --no-git-tag-version --allow-same-version
+
+      - name: Install dependencies
+        if: steps.meta.outputs.exists == 'false'
+        run: npm ci
+
+      - name: Validate Community source boundary
+        if: steps.meta.outputs.exists == 'false'
+        run: npm run check:community-boundary
+
+      - name: Typecheck Community source
+        if: steps.meta.outputs.exists == 'false'
+        run: npm run typecheck
+
+      - name: Build Community runtime
+        if: steps.meta.outputs.exists == 'false'
+        run: npm run build
+
+      - name: Run open-core policy tests
+        if: steps.meta.outputs.exists == 'false'
+        run: npm run test:open-core
+
+      - name: Enforce npm high and critical audit gate
+        if: steps.meta.outputs.exists == 'false'
+        run: |
+          npm audit --json > npm-audit.json || true
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const audit = JSON.parse(fs.readFileSync('npm-audit.json', 'utf8'));
+          const counts = audit.metadata?.vulnerabilities || {};
+          const high = Number(counts.high || 0);
+          const critical = Number(counts.critical || 0);
+          console.log(`npm audit: critical=${critical}, high=${high}`);
+          if (critical > 0 || high > 0) process.exit(1);
+          NODE
+
+      - name: Generate SPDX SBOM
+        if: steps.meta.outputs.exists == 'false'
+        run: npm sbom --sbom-format spdx > SBOM.spdx.json
+
+      - name: Build Community Docker image
+        if: steps.meta.outputs.exists == 'false'
+        env:
+          APS_VERSION: ${{ steps.meta.outputs.version }}
+        run: docker build -t "aps-community-release:${APS_VERSION}" .
+
+      - name: Boot and verify Community image
+        if: steps.meta.outputs.exists == 'false'
+        env:
+          APS_VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          docker run -d --rm --name aps-community-release -p 39082:3080 "aps-community-release:${APS_VERSION}"
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:39082/api/health > health.json; then
+              cat health.json
+              node - <<'NODE'
+          const fs = require('node:fs');
+          const health = JSON.parse(fs.readFileSync('health.json', 'utf8'));
+          if (health.version !== process.env.APS_VERSION) {
+            console.error(`Health version ${health.version} does not match VERSION ${process.env.APS_VERSION}.`);
+            process.exit(1);
+          }
+          NODE
+              curl --fail --silent --show-error http://127.0.0.1:39082/ > home.html
+              test -s home.html
+              if grep -q 'Erreur interne APS' home.html; then
+                echo "Community home page returned the APS internal error payload."
+                exit 1
+              fi
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs aps-community-release
+          exit 1
+
+      - name: Stop validation container
+        if: always() && steps.meta.outputs.exists == 'false'
+        run: docker rm -f aps-community-release || true
+
+      - name: Assemble release artifacts
+        if: steps.meta.outputs.exists == 'false'
+        env:
+          APS_VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          mkdir -p staging/source
+          git archive "$GITHUB_SHA" | tar -x -C staging/source
+          cp package-lock.json staging/source/package-lock.json
+          tar -czf "ai-process-studio-community-${APS_VERSION}-source.tar.gz" -C staging/source .
+          docker save "aps-community-release:${APS_VERSION}" | gzip > "ai-process-studio-community-${APS_VERSION}-docker.tar.gz"
+          sha256sum \
+            "ai-process-studio-community-${APS_VERSION}-source.tar.gz" \
+            "ai-process-studio-community-${APS_VERSION}-docker.tar.gz" \
+            SBOM.spdx.json \
+            npm-audit.json \
+            health.json \
+            home.html \
+            > SHA256SUMS.txt
+
+      - name: Extract release notes from changelog
+        if: steps.meta.outputs.exists == 'false'
+        env:
+          APS_VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const version = process.env.APS_VERSION;
+          const changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
+          const marker = `## ${version} `;
+          const start = changelog.indexOf(marker);
+          if (start < 0) throw new Error(`Missing CHANGELOG section for ${version}`);
+          const next = changelog.indexOf('\n## ', start + marker.length);
+          const section = changelog.slice(start, next < 0 ? changelog.length : next).trim();
+          fs.writeFileSync('RELEASE_NOTES.md', `${section}\n`);
+          NODE
+
+      - name: Publish GitHub Release
+        if: steps.meta.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APS_VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          gh release create "v${APS_VERSION}" \
+            --target "$GITHUB_SHA" \
+            --title "AI Process Studio Community ${APS_VERSION}" \
+            --notes-file RELEASE_NOTES.md \
+            "ai-process-studio-community-${APS_VERSION}-source.tar.gz" \
+            "ai-process-studio-community-${APS_VERSION}-docker.tar.gz" \
+            SBOM.spdx.json \
+            npm-audit.json \
+            health.json \
+            home.html \
+            SHA256SUMS.txt
