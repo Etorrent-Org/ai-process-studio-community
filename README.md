@@ -4,10 +4,10 @@ AI Process Studio is a standalone local-first application for documenting and ma
 
 ## Version
 
-- Application: 1.1.0
+- Application: 1.1.1
 - State schema: 2.1.0
 - Storage: json-local
-- Docker image target: `erwanntorrent/ai-process-studio:1.1.0`
+- Docker image target: `erwanntorrent/ai-process-studio:1.1.1`
 
 ## Editions
 
@@ -79,7 +79,7 @@ Update:
 
     .\UPDATE-AI-PROCESS-STUDIO.ps1
 
-The Dockerfile now rebuilds the Community web runtime directly from the maintained `app/` source. The historical compiled `dist/` bundle is no longer tracked in the Community candidate and the legacy compatibility patch is no longer used.
+The Dockerfile rebuilds the Community web runtime directly from the maintained `app/` source and installs the production dependencies required by the Vinext/React SSR runtime.
 
 Existing 2.0.0 state is automatically migrated to schema 2.1.0. Retired integration settings are removed during migration and historical opportunity category `Automatiser avec n8n` is normalized to `Automatiser`.
 
@@ -96,9 +96,9 @@ Generated `dist/` output is ignored by Git and produced during `npm run build` o
 
 ## Publication status
 
-The **current private repository itself must not simply be switched to public**, because its historical Git commits contain the earlier transitional bundle and earlier mixed Community/Professional source.
+This repository is the public Community source repository, initialized from the validated clean Community snapshot. The private development and Professional integration repository remains separate and private.
 
-A future public repository must be initialized from a clean Community snapshot produced from the current clean HEAD, without importing the private repository history. Publication, tag creation, GitHub Release and Docker Hub publication are separate authorized operations.
+Tag creation, GitHub Releases and any Docker Hub publication remain separate release operations. The Community installation path builds the Docker image locally from this source with Docker Compose.
 
 ## Backup and restore
 
@@ -110,6 +110,8 @@ Restore a backup:
 
     .\RESTORE-AI-PROCESS-STUDIO.ps1 -ArchivePath <path-to-zip>
 
+Backups created with the earlier `license/` host directory remain restorable; version 1.1.1 uses the Windows-safe `licenses/` host directory while keeping `/app/license` inside the container.
+
 ## Validation
 
     npm run check:community-boundary
@@ -117,7 +119,7 @@ Restore a backup:
     npm run build
     npm run test:open-core
 
-The `Lot C validation` GitHub Actions workflow also rebuilds and boots the Community Docker image from source.
+The `Community validation` GitHub Actions workflow rebuilds and boots the Community Docker image from source, verifies `/api/health` and the application home page, and includes a Windows path-safety check.
 
 ## Repository structure
 
@@ -129,5 +131,5 @@ The `Lot C validation` GitHub Actions workflow also rebuilds and boots the Commu
 - `prompts/` : Community prompt definitions
 - `seed/` : initial Community application state and public verification key
 - `data/` : local runtime data, excluded from Git
-- `license/` : optional local Professional licence, excluded from Git
+- `licenses/` : optional local Professional licence, excluded from Git except for its README
 - `backups/` : local backups, excluded from Git

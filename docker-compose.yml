@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
 
-    image: erwanntorrent/ai-process-studio:1.1.0
+    image: erwanntorrent/ai-process-studio:1.1.1
 
     ports:
       - "127.0.0.1:3080:3080"

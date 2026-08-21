@@ -17,7 +17,7 @@ RUN npm run typecheck \
 FROM node:22-alpine
 
 LABEL org.opencontainers.image.title="AI Process Studio Community" \
-      org.opencontainers.image.version="1.1.0" \
+      org.opencontainers.image.version="1.1.1" \
       org.opencontainers.image.description="Local-first Community process intelligence workspace" \
       org.opencontainers.image.licenses="MPL-2.0"
 

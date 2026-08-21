@@ -21,6 +21,9 @@ jobs:
       - name: Resolve package version
         run: echo "APS_VERSION=$(cat VERSION)" >> "$GITHUB_ENV"
 
+      - name: Align package metadata with VERSION
+        run: npm version "$APS_VERSION" --no-git-tag-version --allow-same-version
+
       - name: Reject case-insensitive tracked path collisions
         run: |
           python - <<'PY'
@@ -112,6 +115,14 @@ jobs:
           for attempt in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:39082/api/health > health.json; then
               cat health.json
+              node - <<'NODE'
+          const fs = require('node:fs');
+          const health = JSON.parse(fs.readFileSync('health.json', 'utf8'));
+          if (health.version !== process.env.APS_VERSION) {
+            console.error(`Health version ${health.version} does not match VERSION ${process.env.APS_VERSION}.`);
+            process.exit(1);
+          }
+          NODE
               exit 0
             fi
             sleep 1

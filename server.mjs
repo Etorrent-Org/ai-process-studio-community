@@ -6,7 +6,7 @@ import { existsSync } from "node:fs";
 import { basename, extname, join, resolve, sep } from "node:path";
 
 const scrypt = promisify(scryptCallback);
-const APP_VERSION = "1.1.0";
+const APP_VERSION = "1.1.1";
 const SCHEMA_VERSION = "2.1.0";
 const BACKUP_FORMAT_VERSION = "2.1.0";
 const PORT = Number(process.env.PORT || 3080);
