@@ -8,7 +8,7 @@ AI Process Studio Community is a **local-first, self-hosted workspace for docume
 
 It runs locally with Docker, stores application data on the host, and works without a licence for the Community feature set.
 
-**Current version:** 1.1.1 · **State schema:** 2.1.0 · **Storage:** local JSON
+**Current version:** 1.1.2 · **State schema:** 2.1.0 · **Storage:** local JSON
 
 [Product page](https://etorrent-org.github.io/ai-process-studio/) · [Latest release](https://github.com/Etorrent-Org/ai-process-studio-community/releases/latest) · [Report a bug](https://github.com/Etorrent-Org/ai-process-studio-community/issues/new?template=bug_report.yml) · [Request a feature](https://github.com/Etorrent-Org/ai-process-studio-community/issues/new?template=feature_request.yml)
 
