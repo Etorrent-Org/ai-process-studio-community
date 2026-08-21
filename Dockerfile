@@ -17,7 +17,7 @@ RUN npm run typecheck \
 FROM node:22-alpine
 
 LABEL org.opencontainers.image.title="AI Process Studio Community" \
-      org.opencontainers.image.version="1.1.1" \
+      org.opencontainers.image.version="1.1.2" \
       org.opencontainers.image.description="Local-first Community process intelligence workspace" \
       org.opencontainers.image.licenses="MPL-2.0"
 
@@ -27,13 +27,17 @@ COPY package.json package-lock.json* ./
 RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev --package-lock=false; fi
 
 COPY --from=frontend-build --chown=node:node /build/dist ./dist
+COPY --chown=node:node VERSION ./VERSION
 COPY --chown=node:node server.mjs ./server.mjs
 COPY --chown=node:node seed ./seed
 COPY --chown=node:node schemas ./schemas
 COPY --chown=node:node prompts ./prompts
 COPY --chown=node:node LICENSE ./LICENSE
 
-RUN mkdir -p /app/data /app/license /app/backups \
+RUN APP_VERSION="$(cat VERSION)" \
+    && sed -i "s/^const APP_VERSION = \".*\";$/const APP_VERSION = \"$APP_VERSION\";/" server.mjs \
+    && grep -Fq "const APP_VERSION = \"$APP_VERSION\";" server.mjs \
+    && mkdir -p /app/data /app/license /app/backups \
     && chown -R node:node /app
 
 USER node
