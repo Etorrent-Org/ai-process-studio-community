@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.1.2 - 2026-08-21
+
+Production licensing bootstrap and release metadata alignment.
+
+### Licensing
+
+- replaces the staging Ed25519 verification key with the production public key
+- production public-key SHA-256 fingerprint: `3d0731662f2f84b5e679dfaca8f67e03475b27f6f71449046c31fc5df2730b04`
+- keeps Community fully usable without a licence
+- licences signed with the former staging key are intentionally no longer accepted by 1.1.2 packages
+
+### Runtime and distribution
+
+- application version: 1.1.2
+- Docker image target: `erwanntorrent/ai-process-studio:1.1.2`
+- makes the root `VERSION` file authoritative for the runtime version embedded into the Docker image
+- state schema remains 2.1.0
+
 ## 1.1.1 - 2026-08-21
 
 Windows installation and Community runtime reliability fixes.
