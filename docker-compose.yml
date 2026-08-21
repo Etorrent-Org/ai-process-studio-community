@@ -21,7 +21,7 @@ services:
 
     volumes:
       - ./data:/app/data
-      - ./license:/app/license
+      - ./licenses:/app/license
       - ./backups:/app/backups
 
     restart: unless-stopped

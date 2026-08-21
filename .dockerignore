@@ -7,5 +7,5 @@ release
 backups/*
 data/*
 !data/README.txt
-license/*.private.*
+licenses/*.private.*
 *.log

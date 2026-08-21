@@ -23,6 +23,9 @@ LABEL org.opencontainers.image.title="AI Process Studio Community" \
 
 WORKDIR /app
 
+COPY package.json package-lock.json* ./
+RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev --package-lock=false; fi
+
 COPY --from=frontend-build --chown=node:node /build/dist ./dist
 COPY --chown=node:node server.mjs ./server.mjs
 COPY --chown=node:node seed ./seed

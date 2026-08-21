@@ -15,8 +15,8 @@ data/*
 !data/README.txt
 
 # Runtime license
-license/*
-!license/README.md
+licenses/*
+!licenses/README.md
 
 # Local backups
 backups/*
