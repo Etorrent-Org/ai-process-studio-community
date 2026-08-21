@@ -1,10 +1,10 @@
 # Commercial model
 
-AI Process Studio uses an open-core model with two editions.
+AI Process Studio uses an open-core model with two clearly separated editions.
 
 ## Community
 
-Community is free and is the public source edition.
+Community is free, public and licensed under MPL-2.0.
 
 Included modules:
 
@@ -12,11 +12,11 @@ Included modules:
 - `discover`
 - `map`
 
-Community has no artificial project or process count limit. Its source is licensed under MPL-2.0.
+Community has no artificial project, process or user count limit and works without a licence.
 
 ## Professional
 
-Professional is a commercial edition. A signed local licence can enable:
+Professional is a separate proprietary distribution. The launch licence enables the five current Professional modules:
 
 - `audit`
 - `ai_finder`
@@ -24,34 +24,43 @@ Professional is a commercial edition. A signed local licence can enable:
 - `sop`
 - `roadmap`
 
-Future commercial modules such as `infographic_export` are not part of the 1.1.0 contract until explicitly shipped.
+Future modules such as `infographic_export` are not included until explicitly shipped.
 
-The launch pricing target is **EUR 99/year per user or installation**. This is an indicative commercial target, not a licence term embedded in the software.
+### Launch offer
 
-## Distribution boundary
+- **Price:** EUR 99 / year / installation.
+- **Seats:** no per-user seat counting at launch.
+- **Order channel:** email to `contact@7-sens.fr`.
+- **Payment and invoicing:** handled manually at launch.
+- **Delivery:** Professional package plus a customer-specific locally verified licence.
+- **Updates:** Professional updates published during the active 12-month licence period are included.
+- **Support:** email, best effort, with no contractual SLA or 24/7 commitment unless separately agreed in writing.
 
-The Community source repository and the Professional commercial implementation must remain separate distribution boundaries.
-
-A signed licence is an authorization mechanism; it is not a substitute for keeping proprietary Professional implementation outside the public Community source package.
-
-The Professional signing private key must never be stored in this repository, in a public CI secret dump, in a Docker image, or in a client backup.
+An installation means one deployed AI Process Studio Professional runtime/instance. There is no hardware binding, per-project cap or per-process cap in the launch offer.
 
 ## Local-first licensing
 
-Version 1.1.0 intentionally uses:
+Professional entitlement is verified locally with an Ed25519 signature:
 
-- no call-home requirement
-- no hardware binding
-- no per-project or per-process caps
-- a local Ed25519 signature check
-- Community fallback when no valid Professional licence is present
+- no licence call-home requirement;
+- no hardware binding;
+- no mandatory telemetry;
+- Community fallback when no valid Professional licence is present.
 
-This keeps installation simple while preserving a clear commercial boundary.
+When a Professional licence expires or becomes invalid, the application falls back to Community rights. Existing Professional records stay stored locally and become available again after activation of an appropriate Professional licence. The licence controls feature entitlement; it does not delete customer data.
 
-## Data ownership
+## Distribution boundary
 
-Backups preserve the user's stored data, including previously created Professional records. Regular Community API responses and project exports do not expose Professional collections without the matching entitlement, and Community restore/state operations cannot inject or modify those protected collections.
+The Community source repository and the Professional proprietary implementation remain separate distribution boundaries. Professional implementation is not hidden inside the public Community frontend behind a UI switch.
 
-## Publication blocker
+The production signing private key is never stored in this repository, a public CI secret dump, a Docker image, a customer package or a client backup.
 
-The repository is **not ready to be made public yet** because the transitional versioned `dist/` snapshot still comes from the historical full application bundle. Lot C must rebuild or remove that transitional bundle and verify that the public Community package contains no proprietary Professional implementation before repository visibility changes.
+## Current baseline
+
+- Community: **1.1.2**
+- Professional: **1.1.2**
+- production public-key fingerprint (SHA-256): `3d0731662f2f84b5e679dfaca8f67e03475b27f6f71449046c31fc5df2730b04`
+- product page: <https://etorrent-org.github.io/ai-process-studio/>
+- Professional contact: `contact@7-sens.fr`
+
+Detailed order, invoicing and contractual information is confirmed in writing before payment. The legal identity of the supplier, applicable taxes and mandatory invoice information are provided on the quotation/invoice used for the transaction.
