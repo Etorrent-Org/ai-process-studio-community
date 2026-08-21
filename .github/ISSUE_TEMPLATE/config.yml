@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/Etorrent-Org/ai-process-studio-community/security
+    about: Please use private security reporting instead of a public issue for vulnerabilities.
+  - name: Product page
+    url: https://etorrent-org.github.io/ai-process-studio/
+    about: Overview of AI Process Studio and its positioning.
