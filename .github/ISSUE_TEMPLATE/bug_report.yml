@@ -1,0 +1,79 @@
+name: Bug report
+description: Report a reproducible problem in AI Process Studio Community
+title: "[Bug] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve AI Process Studio Community. Please remove secrets, licence files and private business data before posting.
+
+  - type: input
+    id: version
+    attributes:
+      label: AI Process Studio version
+      description: Example: 1.1.1
+      placeholder: 1.1.1
+    validations:
+      required: true
+
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: Windows 11 24H2
+    validations:
+      required: true
+
+  - type: input
+    id: docker
+    attributes:
+      label: Docker Desktop version
+      placeholder: Docker Desktop x.y.z
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Give the shortest sequence that reproduces the problem.
+      placeholder: |
+        1. Start the application
+        2. Open ...
+        3. Click ...
+        4. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: Include the exact error message when available.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Paste only the relevant excerpt and remove secrets, session values and private process data.
+      render: shell
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed passwords, cookies, licence files, signing keys and confidential backup contents.
+          required: true
+        - label: I checked that this is not a security vulnerability requiring private disclosure.
+          required: true

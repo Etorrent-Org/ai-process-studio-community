@@ -1,135 +1,170 @@
-# AI Process Studio
+# AI Process Studio Community
 
-AI Process Studio is a standalone local-first application for documenting and mapping business processes, with an open-core Community edition and a separate Professional commercial distribution.
+[![Release](https://img.shields.io/github/v/release/Etorrent-Org/ai-process-studio-community)](https://github.com/Etorrent-Org/ai-process-studio-community/releases/latest)
+[![Community validation](https://github.com/Etorrent-Org/ai-process-studio-community/actions/workflows/lot-c-validation.yml/badge.svg?branch=main)](https://github.com/Etorrent-Org/ai-process-studio-community/actions/workflows/lot-c-validation.yml)
+[![License: MPL-2.0](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](LICENSE)
 
-## Version
+AI Process Studio Community is a **local-first, self-hosted workspace for documenting and mapping business processes** before deciding where AI or automation is actually useful.
 
-- Application: 1.1.1
-- State schema: 2.1.0
-- Storage: json-local
-- Docker image target: `erwanntorrent/ai-process-studio:1.1.1`
+It runs locally with Docker, stores application data on the host, and works without a licence for the Community feature set.
 
-## Editions
+**Current version:** 1.1.1 · **State schema:** 2.1.0 · **Storage:** local JSON
 
-**Community** works without a licence and includes:
+[Product page](https://etorrent-org.github.io/ai-process-studio/) · [Latest release](https://github.com/Etorrent-Org/ai-process-studio-community/releases/latest) · [Report a bug](https://github.com/Etorrent-Org/ai-process-studio-community/issues/new?template=bug_report.yml) · [Request a feature](https://github.com/Etorrent-Org/ai-process-studio-community/issues/new?template=feature_request.yml)
 
-- `core` — local repository and portfolio data
-- `discover` — AS-IS process capture
-- `map` — deterministic process mapping
-- local documents, backup and Community-safe exports
+## What Community does
 
-**Professional** is a separate commercial distribution that can enable:
+Community focuses on understanding the real process first:
 
-- `audit`
-- `ai_finder`
-- `optimize`
-- `sop`
-- `roadmap`
+- **Discover** — capture the AS-IS process, actors, steps and friction points.
+- **Map** — turn the captured process into a deterministic process map.
+- **Core workspace** — manage projects, process information and local documents.
+- **Local ownership** — keep runtime data, backups and exports under your control.
+- **Community-safe exports** — export only data available to the Community entitlement.
 
-The public Community frontend does not contain the implementation of those Professional capabilities.
+Community works without a licence and includes the `core`, `discover` and `map` modules.
 
-## Open-source licence
+## Quick start on Windows
 
-The Community source is licensed under **MPL-2.0**. See `LICENSE` and `CONTRIBUTING.md`.
+### Requirements
 
-Professional is a separate commercial implementation boundary. A signed licence authorizes installed Professional modules but does not make their implementation part of the Community source package. See `COMMERCIAL.md` and `docs/LICENSING.md`.
+- Windows 10 or 11
+- Docker Desktop running
+- PowerShell
 
-## Security and entitlement policy
+### Recommended: install from the latest GitHub Release
 
-The local server is authoritative for module access.
+1. Download the latest `ai-process-studio-community-<version>-source.tar.gz` archive from the [Releases page](https://github.com/Etorrent-Org/ai-process-studio-community/releases/latest).
+2. Extract it into a dedicated folder.
+3. Open PowerShell in that folder.
+4. Run:
 
-- Professional collections are blocked without the matching module.
-- `/api/state` hides unlicensed Professional collections and prompts.
-- Community full-state saves preserve hidden Professional data instead of deleting it.
-- Crafted state and restore payloads cannot inject or modify Professional collections.
-- Project exports include only data authorized by the current entitlement.
-- Raw backups preserve locally stored user data for recovery and data ownership.
-- Professional licence documents are validated for edition, module allowlist, duplicates, dates and Ed25519 signature.
-- The signing private key is never part of the client repository or image.
+```powershell
+.\INSTALL-AI-PROCESS-STUDIO.ps1
+```
 
-See `SECURITY.md` for the local threat model.
+Then open:
 
-## Runtime
+```text
+http://127.0.0.1:3080
+```
 
-AI Process Studio runs locally with Docker.
+The installer builds the Docker image locally from the published Community source. A Docker Hub image is **not required**.
 
-Start:
+### Start and stop later
 
-    .\START-AI-PROCESS-STUDIO.ps1
-
-Stop:
-
-    .\STOP-AI-PROCESS-STUDIO.ps1
-
-Default URL:
-
-    http://127.0.0.1:3080
+```powershell
+.\START-AI-PROCESS-STUDIO.ps1
+.\STOP-AI-PROCESS-STUDIO.ps1
+```
 
 Health endpoint:
 
-    http://127.0.0.1:3080/api/health
+```text
+http://127.0.0.1:3080/api/health
+```
 
-## Installation and update
+## Community and Professional
 
-Windows installation:
+AI Process Studio uses an open-core model with a strict source boundary.
 
-    .\INSTALL-AI-PROCESS-STUDIO.ps1
+| Capability | Community | Professional |
+| --- | :---: | :---: |
+| Projects and local process workspace | ✅ | ✅ |
+| AS-IS process discovery | ✅ | ✅ |
+| Deterministic process mapping | ✅ | ✅ |
+| Local documents, backup and Community-safe exports | ✅ | ✅ |
+| Audit | — | ✅ |
+| AI opportunity finder | — | ✅ |
+| Optimization | — | ✅ |
+| SOP generation | — | ✅ |
+| Transformation roadmap | — | ✅ |
 
-Update:
+Professional is a **separate commercial distribution**. Its implementation is not shipped inside the public Community frontend behind a simple UI gate. See [`COMMERCIAL.md`](COMMERCIAL.md) and [`docs/LICENSING.md`](docs/LICENSING.md).
 
-    .\UPDATE-AI-PROCESS-STUDIO.ps1
+## Privacy and data ownership
 
-The Dockerfile rebuilds the Community web runtime directly from the maintained `app/` source and installs the production dependencies required by the Vinext/React SSR runtime.
+AI Process Studio is designed for local operation:
 
-Existing 2.0.0 state is automatically migrated to schema 2.1.0. Retired integration settings are removed during migration and historical opportunity category `Automatiser avec n8n` is normalized to `Automatiser`.
+- the default service binds to `127.0.0.1`;
+- application state is stored locally;
+- backups stay local unless you move them elsewhere;
+- no call-home licensing is required for Community;
+- no telemetry is required to use Community.
 
-## Community frontend source
-
-- `app/community-studio.tsx` — Community-only application UI
-- `app/page.tsx` — Community entry point
-- `package.json` — frontend dependencies and scripts
-- `vite.config.ts` — Vinext/Vite build configuration
-- `tsconfig.json` — TypeScript configuration
-- `scripts/check-community-boundary.mjs` — CI guard against reintroducing Professional implementation markers
-
-Generated `dist/` output is ignored by Git and produced during `npm run build` or Docker build.
-
-## Publication status
-
-This repository is the public Community source repository, initialized from the validated clean Community snapshot. The private development and Professional integration repository remains separate and private.
-
-Tag creation, GitHub Releases and any Docker Hub publication remain separate release operations. The Community installation path builds the Docker image locally from this source with Docker Compose.
+See [`SECURITY.md`](SECURITY.md) for the local threat model and vulnerability reporting guidance.
 
 ## Backup and restore
 
 Create a backup:
 
-    .\BACKUP-AI-PROCESS-STUDIO.ps1
+```powershell
+.\BACKUP-AI-PROCESS-STUDIO.ps1
+```
 
 Restore a backup:
 
-    .\RESTORE-AI-PROCESS-STUDIO.ps1 -ArchivePath <path-to-zip>
+```powershell
+.\RESTORE-AI-PROCESS-STUDIO.ps1 -ArchivePath <path-to-zip>
+```
 
-Backups created with the earlier `license/` host directory remain restorable; version 1.1.1 uses the Windows-safe `licenses/` host directory while keeping `/app/license` inside the container.
+Version 1.1.1 uses the Windows-safe host directory `licenses/` while keeping `/app/license` inside the container. Backups made with the earlier `license/` host directory remain restorable.
 
-## Validation
+## Updating
 
-    npm run check:community-boundary
-    npm run typecheck
-    npm run build
-    npm run test:open-core
+From an updated source folder:
 
-The `Community validation` GitHub Actions workflow rebuilds and boots the Community Docker image from source, verifies `/api/health` and the application home page, and includes a Windows path-safety check.
+```powershell
+.\UPDATE-AI-PROCESS-STUDIO.ps1
+```
+
+Existing state using schema 2.0.0 is automatically migrated to schema 2.1.0.
+
+## Troubleshooting
+
+Before opening a bug, please include:
+
+- AI Process Studio version;
+- Windows version;
+- Docker Desktop version;
+- the exact command used;
+- the exact error message;
+- relevant Docker logs with secrets removed.
+
+Use the [bug report template](https://github.com/Etorrent-Org/ai-process-studio-community/issues/new?template=bug_report.yml). For general support guidance, see [`SUPPORT.md`](SUPPORT.md).
+
+Do **not** attach passwords, session cookies, Professional signing keys, customer licence files or private backup archives.
+
+## For contributors
+
+The maintained Community frontend lives in `app/`. Generated `dist/` output is intentionally not tracked.
+
+Validation commands:
+
+```text
+npm run check:community-boundary
+npm run typecheck
+npm run build
+npm run test:open-core
+```
+
+GitHub Actions also rebuilds and boots the Community Docker image, checks `/api/health`, verifies the application home page and validates Windows-safe paths.
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`ARCHITECTURE.md`](ARCHITECTURE.md) before proposing source changes.
 
 ## Repository structure
 
-- `app/` : maintained Community frontend source
-- `scripts/` : source-boundary and maintenance scripts
-- `tests/` : open-core and policy tests
-- `server.mjs` : local Node.js server and entitlement API
-- `schemas/` : JSON schemas
-- `prompts/` : Community prompt definitions
-- `seed/` : initial Community application state and public verification key
-- `data/` : local runtime data, excluded from Git
-- `licenses/` : optional local Professional licence, excluded from Git except for its README
-- `backups/` : local backups, excluded from Git
+- `app/` — maintained Community frontend source
+- `scripts/` — source-boundary and maintenance scripts
+- `tests/` — open-core and policy tests
+- `server.mjs` — local Node.js server and entitlement API
+- `schemas/` — JSON schemas
+- `prompts/` — Community prompt definitions
+- `seed/` — initial Community state and public verification key
+- `data/` — local runtime data, excluded from Git
+- `licenses/` — optional local Professional licence, excluded from Git except for its README
+- `backups/` — local backups, excluded from Git
+
+## Licence
+
+AI Process Studio Community is licensed under **Mozilla Public License 2.0 (MPL-2.0)**. See [`LICENSE`](LICENSE).

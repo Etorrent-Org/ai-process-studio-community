@@ -1,0 +1,55 @@
+name: Feature request
+description: Suggest an improvement for AI Process Studio Community
+title: "[Feature] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Community focuses on local-first process discovery, mapping and core workspace capabilities. Professional-only implementation requests may be redirected to the commercial roadmap.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Describe the user or process problem before describing the solution.
+      placeholder: What is difficult today, for whom, and in which workflow?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed improvement
+      description: Describe the smallest useful change.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Core workspace
+        - Discover
+        - Map
+        - Backup / restore / export
+        - Installation / update
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional. Explain any workaround or alternative you already tried.
+
+  - type: checkboxes
+    id: fit
+    attributes:
+      label: Community fit
+      options:
+        - label: This request can be useful without requiring Professional-only source code.
+          required: true
